@@ -3,6 +3,7 @@ import customtkinter as ctk
 from PIL import Image
 
 from AVA.ui.widgets import *
+import os
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dark-blue"
@@ -52,8 +53,8 @@ class App(ctk.CTk):
         self.add_button = ctk.CTkButton(
             self.side_panel,
             image=ctk.CTkImage(
-                light_image=Image.open("AVA\\AVA\\ui\\assets\\add.png"),
-                dark_image=Image.open("AVA\\AVA\\ui\\assets\\add.png"),
+                light_image=Image.open("AVA\\AVA\\ui\\assets\\add.png".replace("/", os.sep).replace("\\", os.sep)),
+                dark_image=Image.open("AVA\\AVA\\ui\\assets\\add.png".replace("/", os.sep).replace("\\", os.sep)),
             ),
             text="",
         )
