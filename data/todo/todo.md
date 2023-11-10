@@ -1,0 +1,3 @@
+- [ ] Buy apples
+- [ ] Buy bananas
+- [x] Buy milk
