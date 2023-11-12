@@ -3,8 +3,8 @@ from random import choice
 
 
 class SidePanel(ctk.CTkFrame):
-    def __init__(self, parent):
-        super().__init__(master=parent)
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(master=parent, *args, **kwargs)
 
         self._corner_radius = 0
         # general attributes

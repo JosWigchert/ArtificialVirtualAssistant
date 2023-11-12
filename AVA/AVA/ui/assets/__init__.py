@@ -1,1 +1,1 @@
-from .manager import AssetsManager
+from .manager import AssetManager, assetManager
