@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from AVA.events import Event
 from AVA.ui.assets import assetManager
 
 
@@ -6,12 +7,10 @@ class TextBar(ctk.CTkFrame):
     def __init__(self, master, button_asset, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
 
-        self.entry = ctk.CTkEntry(
-            self,
-            height=self["height"],
-        )
+        self.event = Event()
+        self.entry = ctk.CTkEntry(self, height=self["height"])
+        self.entry.pack(side=ctk.LEFT, expand=True, padx=(0, 5), fill=ctk.X)
 
-        self.entry.pack(side="left", expand=True, padx=(0, 5))
         self.button = ctk.CTkButton(
             self,
             text="",
@@ -21,13 +20,11 @@ class TextBar(ctk.CTkFrame):
             width=self["height"],
         )
         self.button.pack(
-            side="right",
+            side=ctk.RIGHT,
         )
 
-    def search(self, event=None):
-        query = self.entry.get()
-        # Perform your search or other action here
-        print(f"Searching for: {query}")
+    def search(self):
+        self.event.publish(text=self.entry.get())
 
 
 class App(ctk.CTk):
@@ -37,9 +34,9 @@ class App(ctk.CTk):
         self.geometry(f"{600}x{800}")
 
         self.bar = TextBar(
-            master=self, button_asset=assetManager.get("search"), width=800, height=40
+            master=self, button_asset=assetManager.get("send"), width=800, height=40
         )
-        self.bar.pack(pady=10)
+        self.bar.pack(pady=10, fill=ctk.X, side=ctk.TOP, padx=10)
 
 
 if __name__ == "__main__":

@@ -8,12 +8,10 @@ class AssetManager:
         self.assets = {}
 
         # loop through assets folder and load images
-        dir = "AVA\\AVA\\ui\\assets"
+        dir = self.sanitize_path("AVA/AVA/ui/assets")
         for filename in os.listdir(dir):
-            file = os.path.join(dir, filename)
+            file = self.sanitize_path(os.path.join(dir, filename))
             self.add(".".join(filename.split(".")[0:-1]), file)
-
-        print(self.assets)
 
     def add(self, name: str, asset: str, dark_asset: str = None):
         try:
@@ -23,21 +21,16 @@ class AssetManager:
                     self.load_image(dark_asset) if dark_asset else loaded_asset
                 )
 
-                image = (
-                    ctk.CTkImage(
-                        light_image=loaded_asset,
-                        dark_image=dark_asset,
-                    ),
+                image = ctk.CTkImage(
+                    light_image=loaded_asset, dark_image=loaded_dark_asset
                 )
 
                 self.assets[name] = {
                     "type": "image",
                     "data": image,
                 }
-            else:
-                print(f"{name} not an image: {asset}")
-        except Exception as e:
-            print(f"Error loading asset: {asset} - {e}")
+        except:
+            pass
 
     def load_image(self, path: str) -> Image:
         if os.path.exists(path):
@@ -51,6 +44,9 @@ class AssetManager:
             return self.assets[name]["data"]
         else:
             return None
+
+    def sanitize_path(self, path: str) -> str:
+        return path.replace("\\", "/").replace("/", os.sep)
 
 
 assetManager = AssetManager()

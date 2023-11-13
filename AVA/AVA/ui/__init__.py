@@ -1,1 +1,1 @@
-from .chatbot import App
+from .chatbot import ChatbotGui
