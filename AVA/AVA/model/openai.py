@@ -40,3 +40,12 @@ class OpenAI:
             self.temperature,
             self.stream,
         )
+
+    def generate_tts(self, text: str, voice: str = "nova"):
+        response = openai.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+        )
+
+        print(f"Generated speech: {response}")
