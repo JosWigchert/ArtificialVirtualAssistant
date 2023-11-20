@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import threading
 
 
 class ChatBubble(ctk.CTkFrame):
@@ -53,24 +54,46 @@ class ChatBubble(ctk.CTkFrame):
         wraplength = int(0.8 * event.width)
         self.message_label.configure(wraplength=wraplength)
 
+    def update_text(self, text):
+        self.message = text
+        self.message_label.configure(text=self.message)
 
-class ChatFrame(ctk.CTkScrollableFrame):
+
+class ChatDialog(ctk.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master=master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.chat_bubbles = []
+        self.chat_bubbles: list[ChatBubble] = []
+        self.lock = threading.Lock()
         self.place(relwidth=1, relheight=1)
 
-        self.add_bubble(False, "John", "Hello!")
-        self.add_bubble(True, "Jane", "Hi John, how are you?")
+        # self.add_bubble(False, "John", "Hello!")
+        # self.add_bubble(True, "Jane", "Hi John, how are you?")
 
     def add_bubble(self, is_user: bool, user: str, message: str):
         bubble = ChatBubble(master=self, is_user=is_user, user=user, message=message)
         bubble.grid(sticky=bubble.sticky, column=0, columnspan=2)
         self.chat_bubbles.append(bubble)
+
+    def message_callback(self, index, old, new):
+        if old is None and new is not None:
+            # append
+            with self.lock:
+                self.add_bubble(
+                    new["is_user"], "User" if new["is_user"] else "AVA", new["content"]
+                )
+            pass
+        if old is not None and new is not None:
+            # update
+            with self.lock:
+                self.chat_bubbles[index].update_text(new["content"])
+            pass
+        if old is not None and new is None:
+            # delete
+            pass
 
 
 class App(ctk.CTk):

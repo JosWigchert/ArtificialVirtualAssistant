@@ -1,3 +1,6 @@
+import threading
+
+
 class Event:
     def __init__(self):
         self.handlers = []
@@ -13,4 +16,5 @@ class Event:
     def publish(self, *args, **kwargs):
         for handler in self.handlers:
             if callable(handler):
-                handler(*args, **kwargs)
+                t = threading.Thread(target=handler, args=args, kwargs=kwargs)
+                t.start()

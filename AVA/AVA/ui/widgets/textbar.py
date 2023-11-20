@@ -4,17 +4,22 @@ from AVA.ui.assets import assetManager
 
 
 class TextBar(ctk.CTkFrame):
-    def __init__(self, master, button_asset, *args, **kwargs):
+    def __init__(
+        self, master, button_asset, reset_on_enter: bool = False, *args, **kwargs
+    ):
         super().__init__(master, *args, **kwargs)
+
+        self.reset_on_enter = reset_on_enter
 
         self.event = Event()
         self.entry = ctk.CTkEntry(self, height=self["height"])
         self.entry.pack(side=ctk.LEFT, expand=True, padx=(0, 5), fill=ctk.X)
+        self.entry.bind("<Return>", self.enter)
 
         self.button = ctk.CTkButton(
             self,
             text="",
-            command=self.search,
+            command=self.enter,
             image=button_asset,
             height=self["height"],
             width=self["height"],
@@ -23,8 +28,10 @@ class TextBar(ctk.CTkFrame):
             side=ctk.RIGHT,
         )
 
-    def search(self):
+    def enter(self, event=None):
         self.event.publish(text=self.entry.get())
+        if self.reset_on_enter:
+            self.entry.delete(0, "end")
 
 
 class App(ctk.CTk):

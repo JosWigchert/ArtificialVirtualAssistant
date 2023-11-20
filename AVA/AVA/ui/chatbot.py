@@ -3,6 +3,7 @@ import customtkinter as ctk
 from PIL import Image
 
 from AVA.ui.widgets import *
+from AVA.ui.chatbot_model import ChatbotModel
 from AVA.ui.assets import assetManager
 import os
 
@@ -14,6 +15,8 @@ ctk.set_default_color_theme("green")  # Themes: "blue" (standard), "green", "dar
 class ChatbotGui(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        self.model = ChatbotModel()
 
         # configure window
         self.title("Chatbot")
@@ -55,13 +58,33 @@ class ChatbotGui(ctk.CTk):
         self.search_bar.pack(
             side=tk.TOP, fill=tk.X, padx=self.default_pad, pady=self.default_pad
         )
+        self.search_bar.event.subscribe(self.model.search_message)
 
     def init_chat(self):
-        self.chat = ChatFrame(self, corner_radius=0)
-        self.chat.grid(row=1, column=1, columnspan=4, sticky="nsew")
+        self.chat_frame = tk.Frame(self, background="red")
+        self.chat_frame.grid(
+            row=1,
+            column=1,
+            rowspan=2,
+            columnspan=4,
+            sticky="nsew",
+            padx=(0, self.default_pad),
+            pady=(0, self.default_pad),
+        )
 
-        self.chat_input = TextBar(self, assetManager.get("send"), height=40)
-        self.chat_input.grid(row=2, column=1, sticky="ew")
+        self.chat = ChatDialog(self.chat_frame, corner_radius=0)
+        self.chat.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True)
+        self.model.messages.add_observer(self.chat.message_callback)
+
+        self.chat_input = TextBar(
+            self.chat_frame,
+            assetManager.get("send"),
+            reset_on_enter=True,
+            height=40,
+            corner_radius=0,
+        )
+        self.chat_input.pack(side=ctk.BOTTOM, fill=ctk.X)
+        self.chat_input.event.subscribe(self.model.send_message)
 
     def init_side_panel(self):
         self.side_panel = ctk.CTkFrame(self, corner_radius=0)
@@ -80,6 +103,7 @@ class ChatbotGui(ctk.CTk):
             self.side_panel,
             image=assetManager.get("add"),
             text="",
+            command=self.model.start_conversation,
         )
         self.add_button.configure(
             width=self.side_panel["width"], height=self.side_panel["width"]

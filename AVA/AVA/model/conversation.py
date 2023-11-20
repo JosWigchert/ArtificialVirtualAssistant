@@ -36,26 +36,25 @@ class Conversation:
             self.handle_response(response)
 
     def handle_response(self, response):
+        self.event.publish(response["choices"][0])
         reply = response["choices"][0]["message"]
-        print(f"Extracted reply: \n{reply}")
-
-        reply_content = response["choices"][0]["message"]["content"]
-
-        self.messages.append({"role": "assistant", "content": reply_content})
+        self.messages.append(
+            {
+                "role": reply["role"],
+                "content": reply["content"],
+            }
+        )
 
     def handle_stream_response(self, response):
-        start_time = time.time()
-        collected_chunks = []
-        message = ""
-        self.messages.append({"role": "assistant", "content": message})
-
+        obj = {"content": ""}
         for chunk in response:
-            chunk_time = (
-                time.time() - start_time
-            )  # calculate the time delay of the chunk
-            collected_chunks.append(chunk)
-            chunk_message = chunk["choices"][0]["delta"]  # extract the message
-            message += chunk_message
-            print(
-                f"Message received {chunk_time:.2f} seconds after request: {chunk_message}"
-            )  # print the delay and text
+            self.event.publish(chunk["choices"][0])
+            if "delta" in chunk["choices"][0]:
+                reply = chunk["choices"][0]["delta"]
+                if "role" in reply:
+                    obj["role"] = reply["role"]
+                if "content" in reply:
+                    obj["content"] += reply["content"]
+                if "finish_reason" in chunk["choices"][0]:
+                    if chunk["choices"][0]["finish_reason"] == "stop":
+                        self.messages.append(obj)

@@ -1,3 +1,3 @@
 from .sidepanel import SidePanel
-from .chat import ChatFrame
+from .chat import ChatDialog
 from .textbar import TextBar

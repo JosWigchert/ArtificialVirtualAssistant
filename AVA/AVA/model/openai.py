@@ -1,7 +1,7 @@
 import openai, json
 from AVA.utils import parse_docstring, load_functions_from_folder
 from AVA.events import Event
-from AVA.model import Conversation
+from AVA.model.conversation import Conversation
 
 
 class OpenAI:
@@ -12,12 +12,14 @@ class OpenAI:
         embeddings: str,
         max_tokens: int = 4096,
         temperature: float = 0.2,
+        stream: bool = False,
     ) -> None:
         openai.api_key = api_key
         self.engine = engine
         self.embeddings = embeddings
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.stream = stream
 
         self.available_functions = {}
         self.function_parameters = []
@@ -31,11 +33,9 @@ class OpenAI:
 
         # print(self.function_parameters)
 
-    def start_chat(self, type: str = "default") -> Conversation:
+    def start_conversation(self, type: str = "default") -> Conversation:
         return Conversation(
             self.engine,
-            self.function_parameters,
-            self.available_functions,
             self.max_tokens,
             self.temperature,
             self.stream,
