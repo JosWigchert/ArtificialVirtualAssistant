@@ -102,7 +102,7 @@ class App(ctk.CTk):
         self.title("CustomTkinter complex_example.py")
         self.geometry(f"{600}x{800}")
 
-        self.my_frame = ChatFrame(master=self, width=600, height=800)
+        self.my_frame = ChatDialog(master=self, width=600, height=800)
 
 
 if __name__ == "__main__":
