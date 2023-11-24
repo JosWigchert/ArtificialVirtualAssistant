@@ -27,7 +27,7 @@ class PDFViewer(ctk.CTkFrame):
             )
             self.loading.set(0)
 
-        self.pages_frame = ScrollableFrame(self, vscroll=True, hscroll=True)
+        self.pages_frame = ctk.CTkScrollableFrame(self)  # , vscroll=True, hscroll=True)
         self.pages_frame.pack(fill="both", expand=True)
         self.pages = []
 

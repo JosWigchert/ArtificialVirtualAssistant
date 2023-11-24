@@ -1,15 +1,24 @@
-<<<<<<< HEAD
 import customtkinter as ctk
 import tkinter as tk
 import fitz
 from threading import Thread
 from AVA.ui.widgets import PDFViewer
+from AVA.model import OpenAI
+from AVA.utils import Environment
 
 
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.geometry("950x900")
+
+        self.env = Environment()
+        self.openai = OpenAI(
+            self.env.OPENAI_API_KEY,
+            self.env.OPENAI_ENGINE,
+            self.env.OPENAI_EMBEDDINGS,
+            stream=True,
+        )
 
         # Menu Bar
         menu_bar = tk.Menu(self)
@@ -43,6 +52,12 @@ class App(ctk.CTk):
             self, text="Continue", command=self.continue_button_pressed
         )
         self.continue_button.pack(side=ctk.BOTTOM, pady=10)
+
+        self.pdf_document = None
+        self.current_page = 0
+        self.last_word = None
+
+        self.audio = Audio()
 
     def theme_selection(self, theme):
         if theme == 0:
@@ -103,10 +118,28 @@ class App(ctk.CTk):
         words = " ".join(next_words)
         print(words)
 
+        if len(next_words) > 0:
+            audio = self.openai.generate_tts(words)
+            self.audio.play(audio)
+
     def continue_words(self):
+        if not self.pdf_document:
+            return
+
         next_words = []
         words = self.pdf_document.load_page(self.current_page).get_text("words")
-        if self.last_word == words[-1]:
+        if not self.last_word:
+            for word in words:
+                if len(next_words) <= 100:
+                    if len(next_words) > 0 and next_words[-1].endswith("-"):
+                        next_words[-1] = next_words[-1][:-1] + word[4]
+                        self.last_word = word
+                    else:
+                        next_words.append(word[4])
+                        self.last_word = word
+                else:
+                    break
+        elif self.last_word == words[-1]:
             if self.current_page < len(self.pdf_viewer.pages) - 1:
                 self.current_page = self.current_page + 1
                 words = self.pdf_document.load_page(self.current_page).get_text("words")
@@ -120,8 +153,6 @@ class App(ctk.CTk):
                             self.last_word = word
                     else:
                         break
-            else:
-                return ""
         else:
             add_next = False
             for word in words:
@@ -141,108 +172,3 @@ class App(ctk.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-=======
-try:
-    from tkinter import *
-    import fitz
-    from tkinter.ttk import Progressbar
-    from threading import Thread
-    import math
-except Exception as e:
-    print(f"This error occured while importing neccesary modules or library {e}")
-
-
-class ShowPdf:
-    img_object_li = []
-
-    def pdf_view(
-        self, master, width=1200, height=600, pdf_location="", bar=True, load="after"
-    ):
-        self.frame = Frame(master, width=width, height=height, bg="white")
-
-        scroll_y = Scrollbar(self.frame, orient="vertical")
-        scroll_x = Scrollbar(self.frame, orient="horizontal")
-
-        scroll_x.pack(fill="x", side="bottom")
-        scroll_y.pack(fill="y", side="right")
-
-        percentage_view = 0
-        percentage_load = StringVar()
-
-        if bar == True and load == "after":
-            self.display_msg = Label(textvariable=percentage_load)
-            self.display_msg.pack(pady=10)
-
-            loading = Progressbar(
-                self.frame, orient=HORIZONTAL, length=100, mode="determinate"
-            )
-            loading.pack(side=TOP, fill=X)
-
-        self.text = Text(
-            self.frame,
-            yscrollcommand=scroll_y.set,
-            xscrollcommand=scroll_x.set,
-            width=width,
-            height=height,
-        )
-        self.text.pack(side="left")
-
-        scroll_x.config(command=self.text.xview)
-        scroll_y.config(command=self.text.yview)
-
-        def add_img():
-            precentage_dicide = 0
-            open_pdf = fitz.open(pdf_location)
-
-            for page in open_pdf:
-                pix = page.getPixmap()
-                pix1 = fitz.Pixmap(pix, 0) if pix.alpha else pix
-                img = pix1.getImageData("ppm")
-                timg = PhotoImage(data=img)
-                self.img_object_li.append(timg)
-                if bar == True and load == "after":
-                    precentage_dicide = precentage_dicide + 1
-                    percentage_view = (
-                        float(precentage_dicide) / float(len(open_pdf)) * float(100)
-                    )
-                    loading["value"] = percentage_view
-                    percentage_load.set(
-                        f"Please wait!, your pdf is loading {int(math.floor(percentage_view))}%"
-                    )
-            if bar == True and load == "after":
-                loading.pack_forget()
-                self.display_msg.pack_forget()
-
-            for i in self.img_object_li:
-                self.text.image_create(END, image=i)
-                self.text.insert(END, "\n\n")
-            self.text.configure(state="disabled")
-
-        def start_pack():
-            t1 = Thread(target=add_img)
-            t1.start()
-
-        if load == "after":
-            master.after(250, start_pack)
-        else:
-            start_pack()
-
-        return self.frame
-
-
-def main():
-    root = Tk()
-    root.geometry("700x780")
-    d = ShowPdf().pdf_view(
-        root,
-        pdf_location="/home/jos/Documents/Obsidian/MasterProjectDocumentation/Literature Review/Papers/BANA.pdf",
-        width=50,
-        height=200,
-    )
-    d.pack()
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
->>>>>>> 1a04da6 (Add tts)

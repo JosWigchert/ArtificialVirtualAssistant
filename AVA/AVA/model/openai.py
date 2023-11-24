@@ -41,10 +41,11 @@ class OpenAI:
             self.stream,
         )
 
-    def generate_tts(self, text: str, voice: str = "nova"):
+    def generate_tts(self, text: str, speed: float = 1.0, voice: str = "nova"):
         response = openai.audio.speech.create(
             model="tts-1",
             voice=voice,
             input=text,
+            speed=speed,
         )
         return response
