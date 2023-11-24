@@ -47,5 +47,4 @@ class OpenAI:
             voice=voice,
             input=text,
         )
-
-        print(f"Generated speech: {response}")
+        return response
